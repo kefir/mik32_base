@@ -2,7 +2,7 @@
 
 # set -xe
 
-TARGET=mik32_asm
+TARGET=mik32_base
 BUILD_DIR=./build
 DRIVERS_DIR=./drivers
 
