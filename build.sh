@@ -27,7 +27,7 @@ INCLUDES="
 "
 
 SOURCES="
-    $DRIVERS_DIR/mik32/runtime/crt0_mt.S
+    crt0_mt.S
     main.c
 "
 

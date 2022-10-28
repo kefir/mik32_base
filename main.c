@@ -1,11 +1,11 @@
 #include "csr.h"
 #include "epic.h"
 #include "gpio.h"
+#include "lptim.h"
 #include "mcu32_memory_map.h"
 #include "pad_config.h"
 #include "power_manager.h"
 #include "scr1_csr_encoding.h"
-#include "timer16.h"
 
 #define __IRQ __attribute__((interrupt("machine")))
 #define __IRQU __attribute__((interrupt("user")))
@@ -13,21 +13,26 @@
 #define PIN_LED2 0 // LED2 управляется выводом PORT_1_0
 #define DELAY_TICKS 1600000
 
+static void timer_init(void);
+static void gpio_init(void);
+static void led_blink(void);
+static void system_init(void);
+
 static volatile uint32_t counter = 0;
 
-void timer_init()
+static void timer_init(void)
 {
-    PM->CLK_APB_P_SET |= PM_CLOCK_TIMER16_0_M;
+    PM->CLK_APB_P_SET |= PM_CLOCK_LPTIM0_M;
 
-    TIMER16_0->CR &= ~TIMER16_ENABLE_M;
-    TIMER16_0->ARR = 999;
-    TIMER16_0->IER = (1 << 1);
-    TIMER16_0->CFGR = TIMER16_PRESCALER_32_M;
+    LPTIM0->CR &= ~LPTIM_ENABLE_M;
+    LPTIM0->ARR = 999;
+    LPTIM0->IER = (1 << 1);
+    LPTIM0->CFGR = LPTIM_PRESCALER_32_M;
 
-    EPIC->MASK_SET |= (1 << EPIC_TIMER16_0_INDEX);
+    EPIC->MASK_SET |= (1 << EPIC_LPTIM0_INDEX);
 }
 
-void gpio_init()
+static void gpio_init(void)
 {
     PM->CLK_APB_P_SET |= PM_CLOCK_GPIO_1_M | PM_CLOCK_GPIO_0_M; // включение тактирования GPIO0 и GPIO1
     PM->CLK_APB_M_SET |= PM_CLOCK_PAD_CONFIG_M; // включение тактирования блока для смены режима выводов
@@ -42,7 +47,7 @@ void gpio_init()
     GPIO_0->OUTPUT |= 1 << PIN_LED2;
 }
 
-void led_blink()
+static void led_blink(void)
 {
     GPIO_0->OUTPUT |= 1 << PIN_LED2; //Установка значения вывода 3 порта 1 в высокий уровень
     for (volatile int i = 0; i < DELAY_TICKS; i++)
@@ -52,12 +57,12 @@ void led_blink()
         ;
 }
 
-void system_init()
+static void system_init(void)
 {
     PM->CLK_APB_M_SET |= PM_CLOCK_EPIC_M | PM_CLOCK_PM_M;
 }
 
-int main()
+int main(void)
 {
     system_init();
     gpio_init();
@@ -72,7 +77,7 @@ int main()
         led_blink();
         if (first) {
             counter = 0;
-            TIMER16_0->CR |= TIMER16_ENABLE_M | TIMER16_START_CONTIN_MODE_M;
+            LPTIM0->CR |= LPTIM_ENABLE_M | LPTIM_START_CONTIN_MODE_M;
             first = false;
         }
     }
@@ -80,8 +85,8 @@ int main()
 
 void trap_handler_default(void)
 {
-    if (TIMER16_0->ISR & (1 << 1)) {
-        TIMER16_0->ICR |= (1 << 1);
+    if (LPTIM0->ISR & (1 << 1)) {
+        LPTIM0->ICR |= (1 << 1);
 
         if (++counter == 250) {
             GPIO_1->OUTPUT ^= 1 << PIN_LED2;
