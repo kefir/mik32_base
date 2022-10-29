@@ -1,14 +1,18 @@
+#include "mik32.h"
+
 #include "csr.h"
+#include "scr1_csr_encoding.h"
+
 #include "epic.h"
 #include "gpio.h"
 #include "lptim.h"
-#include "mcu32_memory_map.h"
 #include "pad_config.h"
 #include "power_manager.h"
-#include "scr1_csr_encoding.h"
 
 #define __IRQ __attribute__((interrupt("machine")))
 #define __IRQU __attribute__((interrupt("user")))
+
+#define LPTIM_IT_RESET 0x4F
 
 #define PIN_LED2 0 // LED2 управляется выводом PORT_1_0
 #define DELAY_TICKS 1600000
@@ -24,10 +28,16 @@ static void timer_init(void)
 {
     PM->CLK_APB_P_SET |= PM_CLOCK_LPTIM0_M;
 
-    LPTIM0->CR &= ~LPTIM_ENABLE_M;
+    LPTIM0->CR &= ~LPTIM_CR_ENABLE;
+    LPTIM0->IER = LPTIM_IER_ARRM;
+    LPTIM0->CFGR = LPTIM_CFGR_PSC32;
     LPTIM0->ARR = 999;
-    LPTIM0->IER = (1 << 1);
-    LPTIM0->CFGR = LPTIM_PRESCALER_32_M;
+    LPTIM0->ICR = LPTIM_IT_RESET;
+    LPTIM0->CMP = 1999;
+
+    for (uint8_t i = 0; i < LPTIM_SYNC_TICKS; i++) {
+        asm volatile("nop");
+    }
 
     EPIC->MASK_SET |= (1 << EPIC_LPTIM0_INDEX);
 }
@@ -43,8 +53,8 @@ static void gpio_init(void)
     GPIO_1->DIRECTION_OUT = 0xFFFF; // Установка направления порта 1 в выход
     GPIO_0->DIRECTION_OUT = 0xFFFF; // Установка направления порта 1 в выход
 
-    GPIO_1->OUTPUT |= 1 << PIN_LED2;
-    GPIO_0->OUTPUT |= 1 << PIN_LED2;
+    GPIO_1->OUTPUT |= (1 << PIN_LED2);
+    GPIO_0->OUTPUT |= (1 << PIN_LED2);
 }
 
 static void led_blink(void)
@@ -59,17 +69,18 @@ static void led_blink(void)
 
 static void system_init(void)
 {
+    write_csr(mstatus, MSTATUS_MIE);
+    write_csr(mie, MIE_MEIE);
+
     PM->CLK_APB_M_SET |= PM_CLOCK_EPIC_M | PM_CLOCK_PM_M;
+
+    gpio_init();
+    timer_init();
 }
 
 int main(void)
 {
     system_init();
-    gpio_init();
-    timer_init();
-
-    write_csr(mstatus, MSTATUS_MIE);
-    write_csr(mie, MIE_MEIE);
 
     bool first = true;
 
@@ -77,7 +88,7 @@ int main(void)
         led_blink();
         if (first) {
             counter = 0;
-            LPTIM0->CR |= LPTIM_ENABLE_M | LPTIM_START_CONTIN_MODE_M;
+            LPTIM0->CR |= LPTIM_CR_ENABLE | LPTIM_CR_CNTSTRT;
             first = false;
         }
     }
@@ -85,12 +96,14 @@ int main(void)
 
 void trap_handler_default(void)
 {
-    if (LPTIM0->ISR & (1 << 1)) {
-        LPTIM0->ICR |= (1 << 1);
+    if (LPTIM0->ISR & LPTIM_ISR_ARRM) {
+        LPTIM0->ICR |= LPTIM_ICR_ARRM;
 
-        if (++counter == 250) {
+        if (++counter == 120) {
             GPIO_1->OUTPUT ^= 1 << PIN_LED2;
             counter = 0;
         }
+    } else {
+        LPTIM0->ICR |= LPTIM_IT_RESET;
     }
 }

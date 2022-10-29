@@ -31,6 +31,9 @@ SOURCES="
     main.c
 "
 
+
+
+echo "Cleaning..."
 rm -fr $BUILD_DIR
 mkdir $BUILD_DIR
 
