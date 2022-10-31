@@ -15,9 +15,11 @@ OBJDUMP=$PREFIX-objdump
 SIZE=$PREFIX-size
 
 FLAGS="
-    -g -Wall -Wextra 
-    -march=rv32imc -mabi=ilp32 -mcmodel=medlow 
+    -g -Wall -Wextra -ggdb3
+    -march=rv32imc -mabi=ilp32
     -static -nostdlib -nostartfiles
+    -fdata-sections -ffunction-sections
+    -Wl,--gc-sections,--print-memory-usage
     -Ttext=0x0000
 "
 
@@ -30,7 +32,6 @@ SOURCES="
     crt0_mt.S
     main.c
 "
-
 
 
 echo "Cleaning..."

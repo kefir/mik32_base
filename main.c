@@ -29,11 +29,9 @@ static void timer_init(void)
     PM->CLK_APB_P_SET |= PM_CLOCK_LPTIM0_M;
 
     LPTIM0->CR &= ~LPTIM_CR_ENABLE;
-    LPTIM0->IER = LPTIM_IER_ARRM;
-    LPTIM0->CFGR = LPTIM_CFGR_PSC32;
+    LPTIM0->IER |= LPTIM_IER_ARRM;
+    LPTIM0->CFGR |= LPTIM_CFGR_PSC32 | LPTIM_CFGR_PRELOAD;
     LPTIM0->ARR = 999;
-    LPTIM0->ICR = LPTIM_IT_RESET;
-    LPTIM0->CMP = 1999;
 
     for (uint8_t i = 0; i < LPTIM_SYNC_TICKS; i++) {
         asm volatile("nop");
@@ -103,7 +101,6 @@ void trap_handler_default(void)
             GPIO_1->OUTPUT ^= 1 << PIN_LED2;
             counter = 0;
         }
-    } else {
-        LPTIM0->ICR |= LPTIM_IT_RESET;
+        LPTIM0->CR |= LPTIM_CR_CNTSTRT;
     }
 }
