@@ -9,13 +9,11 @@
 #include "pad_config.h"
 #include "power_manager.h"
 
-#define __IRQ __attribute__((interrupt("machine")))
-#define __IRQU __attribute__((interrupt("user")))
-
 #define LPTIM_IT_RESET 0x4F
 
 #define PIN_LED2 0 // LED2 управляется выводом PORT_1_0
 #define DELAY_TICKS 1600000
+#define LED_DELAY_MS 250
 
 static void timer_init(void);
 static void gpio_init(void);
@@ -29,15 +27,17 @@ static void timer_init(void)
     PM->CLK_APB_P_SET |= PM_CLOCK_LPTIM0_M;
 
     LPTIM0->CR &= ~LPTIM_CR_ENABLE;
-    LPTIM0->IER |= LPTIM_IER_ARRM;
-    LPTIM0->CFGR |= LPTIM_CFGR_PSC32 | LPTIM_CFGR_PRELOAD;
+    LPTIM0->IER = LPTIM_IER_ARRM;
+    LPTIM0->CFGR = LPTIM_CFGR_PSC32;
     LPTIM0->ARR = 999;
 
-    for (uint8_t i = 0; i < LPTIM_SYNC_TICKS; i++) {
+    EPIC->MASK_SET |= (1 << EPIC_LPTIM0_INDEX);
+
+    LPTIM0->CR |= LPTIM_CR_ENABLE;
+
+    for (volatile int i = 0; i < LPTIM_SYNC_TICKS; i++) {
         asm volatile("nop");
     }
-
-    EPIC->MASK_SET |= (1 << EPIC_LPTIM0_INDEX);
 }
 
 static void gpio_init(void)
@@ -67,29 +67,26 @@ static void led_blink(void)
 
 static void system_init(void)
 {
-    write_csr(mstatus, MSTATUS_MIE);
-    write_csr(mie, MIE_MEIE);
-
     PM->CLK_APB_M_SET |= PM_CLOCK_EPIC_M | PM_CLOCK_PM_M;
 
     gpio_init();
     timer_init();
+
+    write_csr(mstatus, MSTATUS_MIE);
+    write_csr(mie, MIE_MEIE);
 }
 
 int main(void)
 {
     system_init();
 
-    bool first = true;
+    LPTIM0->CR |= LPTIM_CR_CNTSTRT;
 
-    while (1) {
+    for (;;) {
         led_blink();
-        if (first) {
-            counter = 0;
-            LPTIM0->CR |= LPTIM_CR_ENABLE | LPTIM_CR_CNTSTRT;
-            first = false;
-        }
     }
+
+    return 0;
 }
 
 void trap_handler_default(void)
@@ -97,8 +94,8 @@ void trap_handler_default(void)
     if (LPTIM0->ISR & LPTIM_ISR_ARRM) {
         LPTIM0->ICR |= LPTIM_ICR_ARRM;
 
-        if (++counter == 120) {
-            GPIO_1->OUTPUT ^= 1 << PIN_LED2;
+        if (++counter == LED_DELAY_MS) {
+            GPIO_1->OUTPUT ^= (1 << PIN_LED2);
             counter = 0;
         }
         LPTIM0->CR |= LPTIM_CR_CNTSTRT;

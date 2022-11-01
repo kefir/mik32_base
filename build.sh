@@ -20,8 +20,9 @@ FLAGS="
     -static -nostdlib -nostartfiles
     -fdata-sections -ffunction-sections
     -Wl,--gc-sections,--print-memory-usage
-    -Ttext=0x0000
+    -T./scripts/mik32.ld
 "
+    # -Ttext=0x0000
 
 INCLUDES="
     -I$DRIVERS_DIR/mik32/include

@@ -1,8 +1,8 @@
+#include "scr1_csr_encoding.h"
 
 #define EXCEPTION_STACK_SPACE 34*4
 #define EXCEPTION_SAVED_REGISTERS 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
 
-.equ STACK_TOP, 0x00004000
 
 # Save caller registers
 .macro _SAVE_CONTEXT
@@ -20,18 +20,31 @@
 
 # Save the mepc and mstatus
 .macro _SAVE_EPC_STATUS
-    csrr x5, mepc  
-    sw   x5, 128(sp)
-    csrr x5, mstatus
-    sw   x5, 132(sp)
+    csrr t0, mepc  
+    sw   t0, 128(sp)
+    csrr t0, mstatus
+    sw   t0, 132(sp)
 .endm
 
 # Restore the mepc and mstatus
 .macro _RESTORE_EPC_STATUS
-  lw   x5, 128(sp)
-  csrw mepc, x5  
-  lw   x5, 132(sp)
-  csrw mstatus, x5  
+  lw   t0, 128(sp)
+  csrw mepc, t0  
+  lw   t0, 132(sp)
+  csrw mstatus, t0  
+.endm
+
+.altmacro
+.macro memcpy src_beg, src_end, dst, tmp_reg
+    LOCAL memcpy_1, memcpy_2
+    j    memcpy_2
+memcpy_1:
+    lw   \tmp_reg, (\src_beg)
+    sw   \tmp_reg, (\dst)
+    add  \src_beg, \src_beg, 4
+    add  \dst, \dst, 4
+memcpy_2:
+    bltu \src_beg, \src_end, memcpy_1
 .endm
 
 .text
@@ -43,11 +56,16 @@ _start:
     .option push                    # 'Save' options state
     .option norelax                 # Tell linker not to optimize memory
 
-        la gp, __global_pointer$
-        la sp, STACK_TOP
+    la gp, __global_pointer$
 
     .option pop
     
+    la sp, __BSS_END__
+    
+    la a1, __DATA_IMAGE_START__
+    la a2, __DATA_IMAGE_END__
+    la a3, __DATA_START__
+    memcpy  a1, a2, a3, t0
 
     # Clear the bss segment
     la  a0, __bss_start      # a0 = start zeroing memory here
