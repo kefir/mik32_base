@@ -53,4 +53,5 @@ Open On-Chip Debugger 0.11.0+dev-02353-g49cf334e9 (2022-10-13-16:37)
 ## Contributing
 
 **Code style:** PEP8-like, GTK-like
+
 **Formatting:** clang-format WebKit default ruleset
