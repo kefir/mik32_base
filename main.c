@@ -89,7 +89,7 @@ int main(void)
     return 0;
 }
 
-void trap_handler_default(void)
+void trap_handler(void)
 {
     if (LPTIM0->ISR & LPTIM_ISR_ARRM) {
         LPTIM0->ICR |= LPTIM_ICR_ARRM;

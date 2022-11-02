@@ -86,25 +86,32 @@ _start:
 
 .size _start, .-_start
 
+.option push
+.org 0xC0
+.balign 64
 
-.org 0xC6
-.global _trap_handler
-.type   _trap_handler, @function
+.global trap_handler
+.weak trap_handler, trap_handler_default
+
+.option norelax
 
 _trap_handler:
-.option norelax
     addi    sp, sp, -(EXCEPTION_STACK_SPACE)
 
     _SAVE_CONTEXT
-    # _SAVE_EPC_STATUS
 
-    call trap_handler_default
+    call trap_handler
 
-    # _RESTORE_EPC_STATUS
     _RESTORE_CONTEXT
 
     addi    sp, sp, EXCEPTION_STACK_SPACE
     mret
 
+trap_handler_default:
+    1: 
+        j 1b
+
 # .space 2
 .size _trap_handler, .-_trap_handler
+
+.option pop
