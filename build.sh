@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# set -xe
 
 TARGET=mik32_base
 BUILD_DIR=./build
@@ -14,15 +13,15 @@ OBJCOPY=$PREFIX-objcopy
 OBJDUMP=$PREFIX-objdump
 SIZE=$PREFIX-size
 
+LD_SCRIPT="$DRIVERS_DIR/mik32/ldscripts/eeprom.ld"
+
 FLAGS="
     -g -Wall -Wextra -ggdb3
     -march=rv32imc -mabi=ilp32
     -static -nostdlib -nostartfiles
     -fdata-sections -ffunction-sections
     -Wl,--gc-sections,--print-memory-usage
-    -T./scripts/mik32.ld
 "
-    # -Ttext=0x0000
 
 INCLUDES="
     -I./include
@@ -31,12 +30,11 @@ INCLUDES="
 "
 
 SOURCES="
-    crt0_mt.S
+    $DRIVERS_DIR/mik32/runtime/crt0.S
     target.c
     timers.c
     main.c
 "
-
 
 echo "Cleaning..."
 rm -fr $BUILD_DIR
@@ -44,7 +42,8 @@ mkdir $BUILD_DIR
 
 
 echo "Compiling..."
-$CC $FLAGS $INCLUDES $LD_SCRIPT $SOURCES -o $BUILD_DIR/$TARGET.elf
+$CC $FLAGS $INCLUDES -T$LD_SCRIPT $SOURCES -o $BUILD_DIR/$TARGET.elf
+$OBJCOPY -Oihex $BUILD_DIR/$TARGET.elf $BUILD_DIR/$TARGET.hex
 
 echo "Dumping asm..."
 $OBJDUMP -Mnumeric,no-aliases -da $BUILD_DIR/$TARGET.elf > $BUILD_DIR/$TARGET.dump
