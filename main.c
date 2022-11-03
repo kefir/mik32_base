@@ -5,7 +5,7 @@ static void led1_blink(void);
 static void led2_blink(void);
 
 static const uint32_t DELAY_TICKS = 1600000;
-static const uint32_t LED_DELAY_MS = 250;
+static const uint32_t LED_DELAY_MS = 125;
 
 static volatile uint32_t led2_counter = 0;
 
@@ -39,8 +39,9 @@ static void led1_blink(void)
 
 static void led2_blink(void)
 {
-    if (++led2_counter == LED_DELAY_MS) {
+    if (led2_counter == LED_DELAY_MS) {
         GPIO_1->OUTPUT ^= (1 << PIN_LED2);
         led2_counter = 0;
     }
+    led2_counter++;
 }
