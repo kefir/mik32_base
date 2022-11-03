@@ -31,12 +31,11 @@ static void timer_init(void)
     LPTIM0->CFGR = LPTIM_CFGR_PSC32;
     LPTIM0->ARR = 999;
 
-    EPIC->MASK_SET |= (1 << EPIC_LPTIM0_INDEX);
+    EPIC->MASK_LEVEL_SET |= (1 << EPIC_LPTIM0_INDEX);
 
     LPTIM0->CR |= LPTIM_CR_ENABLE;
 
     for (volatile int i = 0; i < LPTIM_SYNC_TICKS; i++) {
-        asm volatile("nop");
     }
 }
 

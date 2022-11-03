@@ -3,7 +3,6 @@
 #define EXCEPTION_STACK_SPACE 34*4
 #define EXCEPTION_SAVED_REGISTERS 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
 
-
 # Save caller registers
 .macro _SAVE_CONTEXT
     .irp index, EXCEPTION_SAVED_REGISTERS
@@ -16,22 +15,6 @@
     .irp index, EXCEPTION_SAVED_REGISTERS
         lw      x\index, 4*\index(sp)
     .endr
-.endm
-
-# Save the mepc and mstatus
-.macro _SAVE_EPC_STATUS
-    csrr t0, mepc  
-    sw   t0, 128(sp)
-    csrr t0, mstatus
-    sw   t0, 132(sp)
-.endm
-
-# Restore the mepc and mstatus
-.macro _RESTORE_EPC_STATUS
-  lw   t0, 128(sp)
-  csrw mepc, t0  
-  lw   t0, 132(sp)
-  csrw mstatus, t0  
 .endm
 
 .altmacro
@@ -91,7 +74,7 @@ _start:
 .balign 64
 
 .global trap_handler
-.weak trap_handler, trap_handler_default
+.weak trap_handler, _trap_handler_default
 
 .option norelax
 
@@ -107,7 +90,7 @@ _trap_handler:
     addi    sp, sp, EXCEPTION_STACK_SPACE
     mret
 
-trap_handler_default:
+_trap_handler_default:
     1: 
         j 1b
 
