@@ -32,7 +32,7 @@ void trap_handler(void)
 
 static void led1_blink(void)
 {
-    GPIO_0->OUTPUT ^= (1 << PIN_LED2); //Установка значения вывода 3 порта 1 в низкий уровень
+    GPIO_0->OUTPUT ^= (1 << PIN_LED2);
     for (volatile uint32_t i = 0; i < DELAY_TICKS; i++)
         ;
 }
