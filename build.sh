@@ -4,6 +4,8 @@
 TARGET=mik32_base
 BUILD_DIR=./build
 DRIVERS_DIR=./drivers
+LIBS_DIR=./lib
+TARGET_DIR=./target
 
 PREFIX=riscv32-unknown-elf
 LD=$PREFIX-ld
@@ -13,7 +15,7 @@ OBJCOPY=$PREFIX-objcopy
 OBJDUMP=$PREFIX-objdump
 SIZE=$PREFIX-size
 
-LD_SCRIPT="$DRIVERS_DIR/mik32/ldscripts/eeprom.ld"
+LD_SCRIPT="$DRIVERS_DIR/mik32/ldscripts/ram.ld"
 
 FLAGS="
     -g -Wall -Wextra -ggdb3
@@ -27,13 +29,26 @@ INCLUDES="
     -I./include
     -I$DRIVERS_DIR/mik32/include
     -I$DRIVERS_DIR/mik32/periphery/include
+    
+    -I$TARGET_DIR/include
+
+    -I$LIBS_DIR/esch/include
+
 "
 
 SOURCES="
     $DRIVERS_DIR/mik32/runtime/crt0.S
-    target.c
-    timers.c
+
+    $LIBS_DIR/esch/esch_queue.c
+    $LIBS_DIR/esch/esch_semaphore.c
+    $LIBS_DIR/esch/esch.c
+    $LIBS_DIR/esch/ports/template/esch_port_template.c
+
+    $TARGET_DIR/target.c
+    $TARGET_DIR/timers.c
+
     main.c
+
 "
 
 echo "Cleaning..."
