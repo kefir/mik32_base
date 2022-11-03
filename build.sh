@@ -25,12 +25,15 @@ FLAGS="
     # -Ttext=0x0000
 
 INCLUDES="
+    -I./include
     -I$DRIVERS_DIR/mik32/include
     -I$DRIVERS_DIR/mik32/periphery/include
 "
 
 SOURCES="
     crt0_mt.S
+    target.c
+    timers.c
     main.c
 "
 
