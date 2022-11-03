@@ -1,3 +1,6 @@
 [submodule "drivers/mik32"]
 	path = drivers/mik32
 	url = https://github.com/sh-sergey/mik32-shared.git
+[submodule "lib/esch"]
+	path = lib/esch
+	url = https://github.com/kefir/esch.git

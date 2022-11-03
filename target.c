@@ -34,4 +34,6 @@ static void system_init(void)
 void target_init(void)
 {
     system_init();
+
+    timers_lptim0_start();
 }

@@ -14,7 +14,6 @@ int main(void)
     target_init();
 
     timers_lptim0_irq_callback_register(led2_blink);
-    timers_lptim0_start();
 
     for (;;) {
         led1_blink();
