@@ -13,7 +13,7 @@ int main(void)
 
     esch_init();
 
-    esch_task_create(LED1_TASK_NAME, LED1_TASK_INTERVAL_MS, LED1_TASK_PRIORITY, led1_task, NULL);
+    // esch_task_create(LED1_TASK_NAME, LED1_TASK_INTERVAL_MS, LED1_TASK_PRIORITY, led1_task, NULL);
     esch_task_create(LED2_TASK_NAME, LED2_TASK_INTERVAL_MS, LED2_TASK_PRIORITY, led2_task, NULL);
 
     esch_run();
@@ -28,19 +28,20 @@ void trap_handler(void)
 {
     if (EPIC->RAW_STATUS & (1 << EPIC_LPTIM0_INDEX)) {
         timers_lptim0_irq();
+    } else if (EPIC->RAW_STATUS & (1 << EPIC_SPI0_INDEX)) {
+        asm volatile("nop");
     }
 }
 
 void led1_task(void* arg)
 {
     (void)arg;
-    GPIO_0->OUTPUT ^= (1 << LED1_PIN);
 }
 
 void led2_task(void* arg)
 {
     (void)arg;
-    GPIO_1->OUTPUT ^= (1 << LED2_PIN);
+    GPIO1->OUTPUT ^= (1 << LED2_PIN);
 }
 
 static void system_tick_timer(void)
