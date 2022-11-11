@@ -7,8 +7,9 @@
 #include "os_tasks.h"
 
 static uint8_t spi_test_data[] = {
-    0x31,
-    0x69,
+    0x03,
+    0x0E,
+    0xFF,
 };
 
 static void system_tick_timer(void);
@@ -39,10 +40,14 @@ void trap_handler(void)
     if (EPIC->RAW_STATUS & (1 << EPIC_SPI0_INDEX)) {
         EPIC->MASK_LEVEL_CLEAR |= (1 << EPIC_SPI0_INDEX);
         if (SPI0->IntStatus & SPI_TX_FIFO_full_M) {
-            SPI0->IntStatus &= ~SPI_TX_FIFO_full_M;
+            SPI0->IntStatus |= SPI_TX_FIFO_full_M;
+            SPI0_CS_ALT_PORT->OUTPUT ^= (1 << SPI0_CS_ALT_PIN);
         }
         if (SPI0->IntStatus & SPI_TX_FIFO_not_full_M) {
-            SPI0->IntStatus &= ~SPI_TX_FIFO_not_full_M;
+            SPI0->IntStatus |= SPI_TX_FIFO_not_full_M;
+        }
+        if (SPI0->IntStatus & SPI_TX_FIFO_underflow_M) {
+            SPI0->IntStatus |= SPI_TX_FIFO_underflow_M;
         }
     }
 }
@@ -50,10 +55,9 @@ void trap_handler(void)
 void spi_tx_task(void* arg)
 {
     (void)arg;
-
-    SPI0_CS_ENABLE;
-    spi_test_send_sync(SPI1, spi_test_data, sizeof(spi_test_data));
-    SPI0_CS_DISABLE;
+    if (spi_initialized()) {
+        spi_test_send_sync(SPI1, spi_test_data, sizeof(spi_test_data));
+    }
 }
 
 void led2_task(void* arg)
