@@ -15,7 +15,7 @@
 #include "mik32_power_manager.h"
 #include "mik32_spi.h"
 
-#define LED1_PIN 0
-#define LED2_PIN 0
+#define LED2_PORT GPIO1
+#define LED2_PIN GPIO_PIN_0
 
 void target_init(void);

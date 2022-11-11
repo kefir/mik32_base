@@ -11,11 +11,11 @@ static void gpio_init(void)
     PM->CLK_APB_P_SET |= PM_CLOCK_GPIO1_M | PM_CLOCK_GPIO0_M;
     PM->CLK_APB_M_SET |= PM_CLOCK_PAD_CONFIG_M;
 
-    PAD_CONFIG->PORT1_CFG |= (1 << (2 * LED1_PIN));
+    PAD_CONFIG->PORT1_CFG |= (PAD_CFG_MODE1 << (PAD_CFG_MODE_LEN * LED2_PIN));
 
     GPIO1->DIRECTION_OUT = 0xFFFF;
 
-    GPIO1->OUTPUT |= (1 << LED1_PIN);
+    GPIO1->OUTPUT |= (1 << LED2_PIN);
 }
 
 static void system_init(void)
