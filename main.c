@@ -12,6 +12,8 @@ static uint8_t spi_test_data[] = {
     0xFF,
 };
 
+static uint8_t data_out[sizeof(spi_test_data)] = { 0 };
+
 static void system_tick_timer(void);
 
 int main(void)
@@ -55,8 +57,11 @@ void trap_handler(void)
 void spi_tx_task(void* arg)
 {
     (void)arg;
+
     if (spi_initialized()) {
-        spi_test_send_sync(SPI1, spi_test_data, sizeof(spi_test_data));
+        spi0_cs_enable();
+        spi_test_send_sync(SPI1, data_out, spi_test_data, sizeof(spi_test_data));
+        spi0_cs_disable();
     }
 }
 

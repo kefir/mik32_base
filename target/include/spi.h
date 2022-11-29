@@ -18,7 +18,7 @@
 #define SPI0_CS_ALT_PIN GPIO_PIN_5
 
 void spi_init(void);
-void spi_test_send_sync(SPI_TypeDef* spi, uint8_t* data, uint8_t len);
+void spi_test_send_sync(SPI_TypeDef* spi, uint8_t* data_out, uint8_t* data, uint8_t len);
 bool spi_initialized(void);
 
 void spi0_cs_enable(void);

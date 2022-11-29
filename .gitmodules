@@ -4,3 +4,6 @@
 [submodule "lib/esch"]
 	path = lib/esch
 	url = https://github.com/kefir/esch.git
+[submodule "lib/mcp2512"]
+	path = lib/mcp2512
+	url = git@gitlab.mettem-m.ru:embedded/libraries/mcp2515.git

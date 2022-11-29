@@ -33,6 +33,7 @@ INCLUDES="
     -I$TARGET_DIR/include
 
     -I$LIBS_DIR/esch/include
+    -I$LIBS_DIR/mcp2512/include
 
 "
 
@@ -43,6 +44,8 @@ SOURCES="
     $LIBS_DIR/esch/esch_semaphore.c
     $LIBS_DIR/esch/esch.c
     $LIBS_DIR/esch/ports/template/esch_port_template.c
+
+    $LIBS_DIR/mcp2512/mcp2515.c
 
     $TARGET_DIR/target.c
     $TARGET_DIR/timers.c
