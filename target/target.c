@@ -3,8 +3,13 @@
 #include "spi.h"
 #include "timers.h"
 
+#include "esch.h"
+
 static void gpio_init(void);
 static void system_init(void);
+static void system_tick_timer(void);
+
+static volatile uint32_t systick = 0;
 
 static void gpio_init(void)
 {
@@ -24,15 +29,41 @@ static void system_init(void)
 
     gpio_init();
     timers_init();
-    spi_init();
+    timers_lptim0_irq_callback_register(system_tick_timer);
+    timers_lptim0_start();
 
     write_csr(mstatus, MSTATUS_MIE);
     write_csr(mie, MIE_MEIE);
+
+    spi_init();
 }
 
 void target_init(void)
 {
     system_init();
+}
 
-    timers_lptim0_start();
+void target_delay_ms(uint32_t delay)
+{
+    uint32_t tickstart = target_tick_get();
+    uint32_t wait = delay;
+
+    while ((target_tick_get() - tickstart) < wait) {
+    }
+}
+
+uint32_t target_tick_get(void)
+{
+    return systick;
+}
+
+void target_systick_advance(void)
+{
+    systick++;
+}
+
+static void system_tick_timer(void)
+{
+    esch_tick_advance();
+    target_systick_advance();
 }

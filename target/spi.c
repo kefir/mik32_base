@@ -12,10 +12,11 @@ static void gpio_init(void);
 
 static bool init = false;
 
-static mcp2515_t mcp_drv = {
+static mcp2515_drv_t mcp_drv = {
     .disable = spi0_cs_disable,
     .enable = spi0_cs_enable,
-    .transfer = spi0_tx_rx
+    .transfer = spi0_tx_rx,
+    .delay_ms = target_delay_ms
 };
 
 void spi_init(void)
@@ -63,7 +64,7 @@ static void spi0_init(void)
 
     SPI0->Enable = ~SPI_ENABLE_M;
 
-    SPI0->Config = SPI_CONFIG_BAUD_RATE_DIV_64_M
+    SPI0->Config = SPI_CONFIG_BAUD_RATE_DIV_32_M
         | SPI_CONFIG_Manual_CS_M
         | SPI_CONFIG_CS_NONE_M
         | SPI_CONFIG_PERI_SEL_M
@@ -119,9 +120,24 @@ static uint8_t spi0_tx_rx(uint8_t byte)
 static void can_test(void)
 {
     mcp2515_init(&mcp_drv);
-    if (mcp2515_speed(500000, 1, 1) < 0) {
+
+    mcp2515_t* registers = mcp2515_registers_get();
+    mcp2515_speed_t speed = {
+        .bitrate = 250000,
+        .sync_seg = 1,
+        .prop_seg = 2,
+        .phase_seg1 = 3,
+        .phase_seg2 = 2,
+    };
+
+    if (mcp2515_speed_set(speed) < 0) {
         __asm__ volatile("nop");
     }
+
+    registers->can_control.osm = MCP2515_ENABLE;
+    mcp2515_can_control_write();
+
+    mcp2515_operation_mode_set(MCP2515_CANCTRL_REQOP_NORMAL);
 }
 
 void spi_test_send_sync(SPI_TypeDef* spi, uint8_t* data_out, uint8_t* data, uint8_t len)

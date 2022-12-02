@@ -7,7 +7,7 @@ extern "C" {
 #include "esch.h"
 
 #define SPI_TX_TASK_NAME "SPI_TX_TASK"
-static const uint32_t SPI_TX_TASK_INTERVAL_MS = 500;
+static const uint32_t SPI_TX_TASK_INTERVAL_MS = 250;
 static const uint16_t SPI_TX_TASK_PRIORITY = 1;
 void spi_tx_task(void* arg);
 

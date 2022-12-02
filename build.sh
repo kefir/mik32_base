@@ -18,7 +18,7 @@ SIZE=$PREFIX-size
 LD_SCRIPT="$DRIVERS_DIR/mik32/ldscripts/ram.ld"
 
 FLAGS="
-    -g -Wall -Wextra -ggdb3
+    -g -Wall -Wextra -ggdb3 -O1
     -march=rv32imc -mabi=ilp32
     -static -nostdlib -nostartfiles
     -fdata-sections -ffunction-sections

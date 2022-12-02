@@ -6,20 +6,19 @@
 #include "esch.h"
 #include "os_tasks.h"
 
+#include "mcp2515.h"
+
 static uint8_t spi_test_data[] = {
-    0x03,
-    0x0E,
-    0xFF,
+    0x03, 0x0E, 0xFF,
+    0x03, 0x0E, 0xFF,
+    0x03, 0x0E
 };
 
-static uint8_t data_out[sizeof(spi_test_data)] = { 0 };
-
-static void system_tick_timer(void);
+static int can_resp = 0;
 
 int main(void)
 {
     target_init();
-    timers_lptim0_irq_callback_register(system_tick_timer);
 
     esch_init();
 
@@ -43,7 +42,6 @@ void trap_handler(void)
         EPIC->MASK_LEVEL_CLEAR |= (1 << EPIC_SPI0_INDEX);
         if (SPI0->IntStatus & SPI_TX_FIFO_full_M) {
             SPI0->IntStatus |= SPI_TX_FIFO_full_M;
-            SPI0_CS_ALT_PORT->OUTPUT ^= (1 << SPI0_CS_ALT_PIN);
         }
         if (SPI0->IntStatus & SPI_TX_FIFO_not_full_M) {
             SPI0->IntStatus |= SPI_TX_FIFO_not_full_M;
@@ -59,9 +57,12 @@ void spi_tx_task(void* arg)
     (void)arg;
 
     if (spi_initialized()) {
-        spi0_cs_enable();
-        spi_test_send_sync(SPI1, data_out, spi_test_data, sizeof(spi_test_data));
-        spi0_cs_disable();
+        can_resp = mcp2515_send(0x01C4, 0, 0, spi_test_data, sizeof(spi_test_data));
+        mcp2515_can_interrupt_flags_read();
+        if (can_resp != 0) {
+            can_resp++;
+        }
+        SPI0_CS_ALT_PORT->OUTPUT ^= (1 << SPI0_CS_ALT_PIN);
     }
 }
 
@@ -69,9 +70,4 @@ void led2_task(void* arg)
 {
     (void)arg;
     LED2_PORT->OUTPUT ^= (1 << LED2_PIN);
-}
-
-static void system_tick_timer(void)
-{
-    esch_tick_advance();
 }
