@@ -64,7 +64,7 @@ static void spi0_init(void)
 
     SPI0->Enable = ~SPI_ENABLE_M;
 
-    SPI0->Config = SPI_CONFIG_BAUD_RATE_DIV_32_M
+    SPI0->Config = SPI_CONFIG_BAUD_RATE_DIV_16_M
         | SPI_CONFIG_Manual_CS_M
         | SPI_CONFIG_CS_NONE_M
         | SPI_CONFIG_PERI_SEL_M
@@ -125,8 +125,8 @@ static void can_test(void)
     mcp2515_speed_t speed = {
         .bitrate = 250000,
         .sync_seg = 1,
-        .prop_seg = 2,
-        .phase_seg1 = 3,
+        .prop_seg = 1,
+        .phase_seg1 = 4,
         .phase_seg2 = 2,
     };
 
