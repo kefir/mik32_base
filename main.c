@@ -15,6 +15,7 @@ static uint8_t spi_test_data[] = {
 };
 
 static int can_resp = 0;
+static uint8_t dummy_counter = 0;
 
 int main(void)
 {
@@ -57,8 +58,11 @@ void spi_tx_task(void* arg)
     (void)arg;
 
     if (spi_initialized()) {
-        can_resp = mcp2515_send(0x01C4, 0, 0, spi_test_data, sizeof(spi_test_data));
+        can_resp = mcp2515_send(0x01C4, MCP2515_ID_STD, MCP2515_RTR_DATA, spi_test_data, sizeof(spi_test_data));
         mcp2515_can_interrupt_flags_read();
+
+        spi_test_data[7] = dummy_counter++; // TEST ONLY
+
         if (can_resp != 0) {
             can_resp++;
         }
