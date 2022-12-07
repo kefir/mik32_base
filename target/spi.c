@@ -33,29 +33,38 @@ void spi_init(void)
 
 static void gpio_init(void)
 {
-    PM->CLK_APB_P_SET |= PM_CLOCK_GPIO0_M;
+    PM->CLK_APB_P_SET |= PM_CLOCK_GPIO0_M
+        | PM_CLOCK_GPIO_IRQ_M;
 
     PAD_CONFIG->PORT0_CFG
         |= PAD_CFG_MODE0 << (PAD_CFG_MODE_LEN * SPI0_CLK_PIN)
         | PAD_CFG_MODE0 << (PAD_CFG_MODE_LEN * SPI0_MOSI_PIN)
         | PAD_CFG_MODE0 << (PAD_CFG_MODE_LEN * SPI0_MISO_PIN)
-        | PAD_CFG_MODE1 << (PAD_CFG_MODE_LEN * SPI0_CS_ALT_PIN)
+        | PAD_CFG_MODE1 << (PAD_CFG_MODE_LEN * SPI0_INT_PIN)
         | PAD_CFG_MODE1 << (PAD_CFG_MODE_LEN * SPI0_CS_PIN);
 
     PAD_CONFIG->PORT0_PUPD
         |= PAD_PUPD_DOWN << (PAD_PUPD_LEN * SPI0_CLK_PIN)
         | PAD_PUPD_DOWN << (PAD_PUPD_LEN * SPI0_MISO_PIN)
         | PAD_PUPD_DOWN << (PAD_PUPD_LEN * SPI0_MOSI_PIN)
-        | PAD_PUPD_UP << (PAD_PUPD_LEN * SPI0_CS_ALT_PIN)
         | PAD_PUPD_UP << (PAD_PUPD_LEN * SPI0_CS_PIN);
 
     GPIO0->DIRECTION_OUT
         |= (1 << SPI0_CS_PIN)
-        | (1 << SPI0_CS_ALT_PIN)
         | (1 << SPI0_MOSI_PIN)
         | (1 << SPI0_CLK_PIN);
 
-    GPIO0->DIRECTION_IN |= (1 << SPI0_MISO_PIN);
+    GPIO0->DIRECTION_IN
+        |= (1 << SPI0_MISO_PIN)
+        | (1 << SPI0_INT_PIN);
+
+    uint32_t gpio0_7_irq = (1 << 7);
+    GPIO_IRQ->CFG = 0x00;
+    GPIO_IRQ->CFG = gpio0_7_irq;
+    GPIO_IRQ->ENABLE_SET = gpio0_7_irq;
+    GPIO_IRQ->EDGE = gpio0_7_irq;
+
+    EPIC->MASK_LEVEL_SET |= (1 << EPIC_GPIO_IRQ_INDEX);
 }
 
 static void spi0_init(void)
@@ -64,7 +73,7 @@ static void spi0_init(void)
 
     SPI0->Enable = ~SPI_ENABLE_M;
 
-    SPI0->Config = SPI_CONFIG_BAUD_RATE_DIV_16_M
+    SPI0->Config = SPI_CONFIG_BAUD_RATE_DIV_32_M
         | SPI_CONFIG_Manual_CS_M
         | SPI_CONFIG_CS_NONE_M
         | SPI_CONFIG_PERI_SEL_M

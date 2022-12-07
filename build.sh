@@ -26,7 +26,6 @@ FLAGS="
 "
 
 INCLUDES="
-    -I./include
     -I$DRIVERS_DIR/mik32/include
     -I$DRIVERS_DIR/mik32/periphery/include
     

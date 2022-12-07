@@ -10,6 +10,7 @@
 
 #include "mik32_epic.h"
 #include "mik32_gpio.h"
+#include "mik32_gpio_irq.h"
 #include "mik32_lptim.h"
 #include "mik32_pad_config.h"
 #include "mik32_power_manager.h"

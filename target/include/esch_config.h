@@ -37,7 +37,7 @@
  * @brief Number of user-defined semaphores.
  *
  */
-#define ESCH_SEMAPHORE_NUM 1
+#define ESCH_SEMAPHORE_NUM 2
 
 /**
  * @brief Enable profiling (should not be used in production)

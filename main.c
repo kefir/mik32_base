@@ -4,6 +4,8 @@
 #include "timers.h"
 
 #include "esch.h"
+#include "esch_semaphore.h"
+
 #include "os_tasks.h"
 
 #include "mcp2515.h"
@@ -15,7 +17,9 @@ static uint8_t spi_test_data[] = {
 };
 
 static int can_resp = 0;
-static uint8_t dummy_counter = 0;
+static volatile uint8_t dummy_counter = 0;
+static esch_semaphore_t* can_irq_sem = NULL;
+static esch_semaphore_t* can_tx_sem = NULL;
 
 int main(void)
 {
@@ -25,6 +29,13 @@ int main(void)
 
     esch_task_create(SPI_TX_TASK_NAME, SPI_TX_TASK_INTERVAL_MS, SPI_TX_TASK_PRIORITY, spi_tx_task, NULL);
     esch_task_create(LED2_TASK_NAME, LED2_TASK_INTERVAL_MS, LED2_TASK_PRIORITY, led2_task, NULL);
+    esch_task_create(SPI_TASK_NAME, SPI_TASK_INTERVAL_MS, SPI_TASK_PRIORITY, spi_task, NULL);
+
+    can_irq_sem = esch_semaphore_create();
+    can_tx_sem = esch_semaphore_create();
+
+    esch_semaphore_take(can_irq_sem);
+    esch_semaphore_take(can_tx_sem);
 
     esch_run();
 
@@ -34,11 +45,25 @@ int main(void)
     return 0;
 }
 
+void spi_task(void* arg)
+{
+    (void)arg;
+    if (esch_semaphore_take(can_irq_sem) == ESCH_OK) {
+        mcp2515_irq_handler();
+    }
+
+    if (esch_semaphore_take(can_tx_sem) == ESCH_OK) {
+        mcp2515_irq_handler();
+        mcp2515_send(0x01C4, MCP2515_ID_STD, MCP2515_RTR_DATA, spi_test_data, sizeof(spi_test_data));
+    }
+}
+
 void trap_handler(void)
 {
     if (EPIC->RAW_STATUS & (1 << EPIC_LPTIM0_INDEX)) {
         timers_lptim0_irq();
     }
+
     if (EPIC->RAW_STATUS & (1 << EPIC_SPI0_INDEX)) {
         EPIC->MASK_LEVEL_CLEAR |= (1 << EPIC_SPI0_INDEX);
         if (SPI0->IntStatus & SPI_TX_FIFO_full_M) {
@@ -51,6 +76,15 @@ void trap_handler(void)
             SPI0->IntStatus |= SPI_TX_FIFO_underflow_M;
         }
     }
+
+    if (EPIC->RAW_STATUS & (1 << EPIC_GPIO_IRQ_INDEX)) {
+        EPIC->MASK_LEVEL_CLEAR |= (1 << EPIC_GPIO_IRQ_INDEX);
+        GPIO_IRQ->CLEAR |= 1 << 7;
+        spi_test_data[0] = (SPI0_INT_PORT->OUTPUT & SPI0_INT_PIN);
+        dummy_counter++;
+
+        esch_semaphore_give(can_irq_sem);
+    }
 }
 
 void spi_tx_task(void* arg)
@@ -58,15 +92,8 @@ void spi_tx_task(void* arg)
     (void)arg;
 
     if (spi_initialized()) {
-        can_resp = mcp2515_send(0x01C4, MCP2515_ID_STD, MCP2515_RTR_DATA, spi_test_data, sizeof(spi_test_data));
-        mcp2515_can_interrupt_flags_read();
-
-        spi_test_data[7] = dummy_counter++; // TEST ONLY
-
-        if (can_resp != 0) {
-            can_resp++;
-        }
-        SPI0_CS_ALT_PORT->OUTPUT ^= (1 << SPI0_CS_ALT_PIN);
+        spi_test_data[7] = dummy_counter; // TEST ONLY
+        esch_semaphore_give(can_tx_sem);
     }
 }
 
