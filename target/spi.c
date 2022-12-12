@@ -86,7 +86,7 @@ static void spi0_init(void)
 
     spi_clear_rx_buff(SPI0);
 
-    SPI0->TxThr = 1;
+    SPI0->TxThr = 8;
 
     SPI0->Enable |= SPI_ENABLE_M;
 

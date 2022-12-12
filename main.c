@@ -16,7 +16,6 @@ static uint8_t spi_test_data[] = {
     0x03, 0x0E
 };
 
-static int can_resp = 0;
 static volatile uint8_t dummy_counter = 0;
 static esch_semaphore_t* can_irq_sem = NULL;
 static esch_semaphore_t* can_tx_sem = NULL;
@@ -53,7 +52,13 @@ void spi_task(void* arg)
     }
 
     if (esch_semaphore_take(can_tx_sem) == ESCH_OK) {
-        mcp2515_irq_handler();
+        spi_test_data[1] = SPI0->IntStatus;
+
+        while (!ANALOG_REG->ADC_VALID) {
+            __asm__ volatile("nop");
+        }
+
+        *(uint16_t*)&spi_test_data[2] = ANALOG_REG->ADC_VALUE;
         mcp2515_send(0x01C4, MCP2515_ID_STD, MCP2515_RTR_DATA, spi_test_data, sizeof(spi_test_data));
     }
 }

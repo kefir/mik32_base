@@ -49,6 +49,7 @@ SOURCES="
     $TARGET_DIR/target.c
     $TARGET_DIR/timers.c
     $TARGET_DIR/spi.c
+    $TARGET_DIR/adc.c
 
     main.c
 

@@ -1,5 +1,6 @@
 #include "target.h"
 
+#include "adc.h"
 #include "spi.h"
 #include "timers.h"
 
@@ -28,6 +29,7 @@ static void system_init(void)
     PM->CLK_APB_M_SET |= PM_CLOCK_EPIC_M | PM_CLOCK_PM_M;
 
     gpio_init();
+    adc_init();
     timers_init();
     timers_lptim0_irq_callback_register(system_tick_timer);
     timers_lptim0_start();

@@ -2,6 +2,10 @@
 
 #include "target.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SPI0_MOSI_PORT GPIO0
 #define SPI0_MOSI_PIN GPIO_PIN_1
 
@@ -23,3 +27,7 @@ bool spi_initialized(void);
 
 void spi0_cs_enable(void);
 void spi0_cs_disable(void);
+
+#ifdef __cplusplus
+}
+#endif
