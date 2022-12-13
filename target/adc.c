@@ -9,7 +9,7 @@ void adc_init(void)
     PM->CLK_APB_P_SET |= PM_CLOCK_ANALOG_REG_M;
     ANALOG_REG->ADC_CONFIG
         |= ADC_CONFIG_EN
-        | (ADC_CHANNEL5 << ADC_SEL_S)
+        | (ADC_TEST_PIN_CHANNEL << ADC_SEL_S)
         | ADC_CONFIG_RESET_N;
     ANALOG_REG->ADC_CONTINIUS = 1;
 }

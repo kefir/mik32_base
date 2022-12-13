@@ -1,5 +1,6 @@
 #include "target.h"
 
+#include "adc.h"
 #include "spi.h"
 #include "timers.h"
 
@@ -54,8 +55,11 @@ void spi_task(void* arg)
     if (esch_semaphore_take(can_tx_sem) == ESCH_OK) {
         spi_test_data[1] = SPI0->IntStatus;
 
+        uint16_t timeout = 0;
         while (!ANALOG_REG->ADC_VALID) {
-            __asm__ volatile("nop");
+            if (timeout++ > ADC_TIMEOUT_DEFAULT) {
+                break;
+            }
         }
 
         *(uint16_t*)&spi_test_data[2] = ANALOG_REG->ADC_VALUE;
