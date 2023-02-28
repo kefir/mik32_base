@@ -22,7 +22,7 @@ extern "C" {
 #include "mik32_spi.h"
 
 #define LED2_PORT GPIO1
-#define LED2_PIN GPIO_PIN_0
+#define LED2_PIN GPIO_PIN_15
 
 #define TARGET_MAX_DELAY 0xFFFFFFFFU
 

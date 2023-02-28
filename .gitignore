@@ -1,3 +1,5 @@
 notes/
 .vscode/
 build/
+nohup.out
+compile_commands.json

@@ -27,9 +27,9 @@ int main(void)
 
     esch_init();
 
-    esch_task_create(SPI_TX_TASK_NAME, SPI_TX_TASK_INTERVAL_MS, SPI_TX_TASK_PRIORITY, spi_tx_task, NULL);
+    // esch_task_create(SPI_TX_TASK_NAME, SPI_TX_TASK_INTERVAL_MS, SPI_TX_TASK_PRIORITY, spi_tx_task, NULL);
     esch_task_create(LED2_TASK_NAME, LED2_TASK_INTERVAL_MS, LED2_TASK_PRIORITY, led2_task, NULL);
-    esch_task_create(SPI_TASK_NAME, SPI_TASK_INTERVAL_MS, SPI_TASK_PRIORITY, spi_task, NULL);
+    // esch_task_create(SPI_TASK_NAME, SPI_TASK_INTERVAL_MS, SPI_TASK_PRIORITY, spi_task, NULL);
 
     can_irq_sem = esch_semaphore_create();
     can_tx_sem = esch_semaphore_create();
