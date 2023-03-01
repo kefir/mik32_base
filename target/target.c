@@ -3,6 +3,7 @@
 #include "adc.h"
 #include "spi.h"
 #include "timers.h"
+#include "uart.h"
 
 #include "esch.h"
 
@@ -30,6 +31,7 @@ static void system_init(void)
 
     gpio_init();
     adc_init();
+    uart_init();
 
     timers_init();
     timers_lptim0_irq_callback_register(system_tick_timer);

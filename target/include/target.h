@@ -20,6 +20,7 @@ extern "C" {
 #include "mik32_pad_config.h"
 #include "mik32_power_manager.h"
 #include "mik32_spi.h"
+#include "mik32_uart.h"
 
 #define LED2_PORT GPIO1
 #define LED2_PIN GPIO_PIN_15

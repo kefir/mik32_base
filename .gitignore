@@ -1,5 +1,6 @@
 notes/
 .vscode/
+.cache/
 build/
 nohup.out
 compile_commands.json
