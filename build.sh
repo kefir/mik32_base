@@ -3,6 +3,7 @@
 
 TARGET=mik32_base
 BUILD_DIR=./build
+APP_DIR=./app
 DRIVERS_DIR=./drivers
 LIBS_DIR=./lib
 TARGET_DIR=./target
@@ -32,8 +33,10 @@ INCLUDES="
     -I$TARGET_DIR/include
 
     -I$LIBS_DIR/esch/include
-    -I$LIBS_DIR/mcp2512/include
+    -I$LIBS_DIR/mt_boot/include
     -I$LIBS_DIR/posix/include
+
+    -I$APP_DIR/include
 
 "
 
@@ -45,14 +48,17 @@ SOURCES="
     $LIBS_DIR/esch/esch.c
     $LIBS_DIR/esch/ports/template/esch_port_template.c
 
-    $LIBS_DIR/mcp2512/mcp2515.c
+    $LIBS_DIR/mt_boot/mt_boot.c
+    $LIBS_DIR/mt_boot/mt_boot_crc.c
+
     $LIBS_DIR/posix/printf.c
 
     $TARGET_DIR/target.c
     $TARGET_DIR/timers.c
     $TARGET_DIR/uart.c
-    $TARGET_DIR/spi.c
     $TARGET_DIR/adc.c
+
+    $APP_DIR/app.c
 
     main.c
 

@@ -40,7 +40,7 @@ static void system_init(void)
     write_csr(mstatus, MSTATUS_MIE);
     write_csr(mie, MIE_MEIE);
 
-    spi_init();
+    // spi_init();
 }
 
 void target_init(void)

@@ -7,3 +7,6 @@
 [submodule "lib/mcp2512"]
 	path = lib/mcp2512
 	url = git@gitlab.mettem-m.ru:embedded/libraries/mcp2515.git
+[submodule "lib/mt_boot"]
+	path = lib/mt_boot
+	url = git@gitlab.mettem-m.ru:embedded/can_bootloader/mt-boot.git
