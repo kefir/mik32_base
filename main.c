@@ -11,8 +11,7 @@
 #include "os_tasks.h"
 
 #include "mcp2515.h"
-
-static int itoa(int num, unsigned char* str, int len, int base);
+#include "printf.h"
 
 static const char WELCOME_STR[] = "=================\r\nMettem MIK32 Playground\r\n=================\r\n";
 
@@ -25,7 +24,6 @@ static uint8_t spi_test_data[] = {
 static volatile uint8_t dummy_counter = 0;
 static esch_semaphore_t* can_irq_sem = NULL;
 static esch_semaphore_t* can_tx_sem = NULL;
-// static char uart_tx_buff[255] = { 0 };
 
 int main(void)
 {
@@ -77,6 +75,9 @@ void spi_task(void* arg)
 
 void trap_handler(void)
 {
+    clear_csr(mstatus, MSTATUS_MIE);
+    clear_csr(mie, MIE_MEIE);
+
     if (EPIC->RAW_STATUS & (1 << EPIC_LPTIM0_INDEX)) {
         timers_lptim0_irq();
     }
@@ -102,6 +103,8 @@ void trap_handler(void)
 
         esch_semaphore_give(can_irq_sem);
     }
+    set_csr(mstatus, MSTATUS_MIE);
+    set_csr(mie, MIE_MEIE);
 }
 
 void spi_tx_task(void* arg)
@@ -125,39 +128,13 @@ void led2_task(void* arg)
         }
     }
 
-    uint16_t v = ANALOG_REG->ADC_VALUE;
+    uint16_t v = 4095 - ANALOG_REG->ADC_VALUE;
     char str[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-    int n = 5;
-    itoa(v, (unsigned char*)str, n, 10);
-    str[n] = '\r';
+    // int n = 5;
+    // itoa(v, (unsigned char*)str, n, 10);
+    // str[n] = '\r';
     // str[n + 1] = '\n';
+    sprintf(str, "\rADC: %04d", v);
 
-    uart_tx(UART_1, str, n + 1);
-}
-
-static int itoa(int num, unsigned char* str, int len, int base)
-{
-    int sum = num;
-    int i = 0;
-    int j = 0;
-    int digit;
-    uint8_t a;
-
-    do {
-        digit = sum % base;
-        if (digit < 0xA) {
-            str[i++] = '0' + digit;
-        } else {
-            str[i++] = 'A' + digit - 0xA;
-        }
-        sum /= base;
-    } while (sum && (i < (len - 1)));
-
-    for (i = 0, j = len - 1; i < j; i++, j--) {
-        a = str[i];
-        str[i] = str[j];
-        str[j] = a;
-    }
-
-    return 0;
+    uart_tx(UART_1, str, sizeof(str));
 }

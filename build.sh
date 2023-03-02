@@ -33,6 +33,7 @@ INCLUDES="
 
     -I$LIBS_DIR/esch/include
     -I$LIBS_DIR/mcp2512/include
+    -I$LIBS_DIR/posix/include
 
 "
 
@@ -45,6 +46,7 @@ SOURCES="
     $LIBS_DIR/esch/ports/template/esch_port_template.c
 
     $LIBS_DIR/mcp2512/mcp2515.c
+    $LIBS_DIR/posix/printf.c
 
     $TARGET_DIR/target.c
     $TARGET_DIR/timers.c
@@ -64,6 +66,7 @@ mkdir $BUILD_DIR
 echo "Compiling..."
 $CC $FLAGS $INCLUDES -T$LD_SCRIPT $SOURCES -o $BUILD_DIR/$TARGET.elf
 $OBJCOPY -Oihex $BUILD_DIR/$TARGET.elf $BUILD_DIR/$TARGET.hex
+$OBJCOPY -Obinary -S $BUILD_DIR/$TARGET.elf $BUILD_DIR/$TARGET.bin
 
 echo "Dumping asm..."
 $OBJDUMP -Mnumeric,no-aliases -da $BUILD_DIR/$TARGET.elf > $BUILD_DIR/$TARGET.dump
